@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Enter OTP</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+  </style>
+</head>
+<body class="bg-gradient-to-br from-green-100 to-blue-200 min-h-screen flex items-center justify-center p-4">
+  <div class="bg-white shadow-2xl rounded-3xl p-10 max-w-md w-full">
+    <h2 class="text-2xl font-bold text-green-700 mb-6 text-center">🔑 Enter OTP to Download</h2>
+    
+    <form id="otpForm" class="space-y-4">
+      <input type="number" name="otp" placeholder="Enter OTP" required class="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400" />
+      <input type="hidden" name="id" id="fileId" />
+      <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg transition">Download ⬇️</button>
+    </form>
+
+    <p id="result" class="text-red-500 mt-4 text-center"></p>
+  </div>
+
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    document.getElementById("fileId").value = urlParams.get("id");
+
+    document.getElementById("otpForm").addEventListener("submit", async function (e) {
+      e.preventDefault();
+      const formData = new FormData(this);
+      const res = await fetch("download.php", {
+        method: "POST",
+        body: formData
+      });
+
+      if (res.status === 200) {
+        const blob = await res.blob();
+        const disposition = res.headers.get('Content-Disposition');
+        let filename = "file";
+
+        if (disposition && disposition.includes("filename=")) {
+          filename = disposition.split("filename=")[1].replace(/"/g, "");
+        }
+
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = filename;
+        a.click();
+      } else {
+        document.getElementById("result").textContent = "Invalid OTP or file expired.";
+      }
+    });
+  </script>
+</body>
+</html>
